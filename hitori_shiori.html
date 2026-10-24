@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<title>ひとり旅しおり</title>
+<style>
+  :root{
+    --sea-deep:#2c6a86;
+    --sea:#4f92b3;
+    --sea-light:#dcedf3;
+    --beige:#f4ede0;
+    --bg:#faf8f4;
+    --card:#ffffff;
+    --ink:#2b3a40;
+    --muted:#7f8e94;
+    --line:#e7e0d3;
+    --radius:18px;
+    --shadow:0 4px 16px rgba(44,106,134,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    font-size:16px;
+    line-height:1.6;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    background:var(--bg);
+    position:relative;
+  }
+
+  /* ================= splash / opening animation ================= */
+  #splash{
+    position:fixed;inset:0;z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(165deg,var(--sea-deep) 0%, var(--sea) 55%, #8fc2d6 100%);
+    color:#fff;overflow:hidden;
+    animation:splashOut .6s ease forwards;
+    animation-delay:1.15s;
+  }
+  #splash .splash-badge{
+    width:84px;height:84px;border-radius:50%;
+    background:rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;
+    font-size:38px;margin-bottom:16px;
+    animation:splashPop .7s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  #splash .splash-title{
+    font-size:19px;font-weight:800;letter-spacing:.06em;
+    opacity:0;animation:splashFadeUp .6s ease forwards;animation-delay:.32s;
+  }
+  #splash .splash-sub{
+    font-size:12px;letter-spacing:.12em;opacity:0;margin-top:8px;
+    animation:splashFadeUp .6s ease forwards;animation-delay:.5s;
+  }
+  #splash .splash-waves{
+    position:absolute;bottom:-6px;left:0;width:100%;height:120px;
+    animation:splashWaveBob 2.6s ease-in-out infinite;
+    opacity:.55;
+  }
+  @keyframes splashPop{ from{transform:scale(.6);opacity:0;} to{transform:scale(1);opacity:1;} }
+  @keyframes splashFadeUp{ from{transform:translateY(10px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes splashWaveBob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(7px);} }
+  @keyframes splashOut{ to{opacity:0;visibility:hidden;} }
+  @media (prefers-reduced-motion: reduce){
+    #splash{animation:none;display:none;}
+  }
+
+  header.top{
+    padding:22px 20px 16px;
+    background:linear-gradient(180deg,var(--sea-light) 0%, var(--bg) 100%);
+    position:sticky;
+    top:0;
+    z-index:5;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  header.top h1{
+    font-size:20px;
+    margin:0 0 2px;
+    color:var(--sea-deep);
+    font-weight:700;
+  }
+  header.top .sub{
+    font-size:13px;
+    color:var(--muted);
+  }
+  .icon-btn{
+    border:none;background:#fff;color:var(--sea-deep);
+    width:38px;height:38px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;box-shadow:var(--shadow);cursor:pointer;flex-shrink:0;
+  }
+  .icon-svg{
+    width:1em;height:1em;
+    vertical-align:-0.15em;
+    display:inline-block;
+    flex-shrink:0;
+  }
+  main{
+    flex:1;
+    padding:8px 18px 100px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    margin-bottom:16px;
+    border:1px solid var(--line);
+  }
+  /* ---- step progress ---- */
+  .progress-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .progress-label{
+    font-size:13px;
+    color:var(--muted);
+    display:flex;align-items:center;gap:6px;
+  }
+  .progress-count{
+    font-size:18px;
+    font-weight:700;
+    color:var(--sea-deep);
+  }
+  .stepper{
+    display:flex;align-items:center;
+  }
+  .step-dot{
+    width:15px;height:15px;min-width:15px;border-radius:50%;
+    border:2px solid var(--sea);background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:8px;color:#fff;
+  }
+  .step-dot.done{background:var(--sea);}
+  .step-line{flex:1;height:2px;background:var(--line);}
+  .step-line.done{background:var(--sea);}
+  /* ---- next spot card ---- */
+  .next-card{
+    background:linear-gradient(135deg,var(--sea-deep),var(--sea));
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    width:100%;
+    text-align:left;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .next-card .next-icon{
+    width:48px;height:48px;min-width:48px;border-radius:14px;
+    background:rgba(255,255,255,.18);
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+  }
+  .next-card .tag{
+    font-size:11px;
+    opacity:.85;
+    letter-spacing:.08em;
+  }
+  .next-card .name{
+    font-size:20px;
+    font-weight:700;
+    margin:4px 0 2px;
+  }
+  .next-card .time{
+    font-size:13px;
+    opacity:.9;
+  }
+  .next-card.done{
+    background:linear-gradient(135deg,#8fae9b,#b7cdb8);
+  }
+  /* ---- timeline ---- */
+  .timeline{
+    padding:4px 0;
+  }
+  .tl-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .tl-item:last-child{border-bottom:none;}
+  .tl-check{
+    width:32px;
+    height:32px;
+    min-width:32px;
+    margin-left:10px;
+    border-radius:50%;
+    border:2px solid var(--sea);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:#fff;
+    font-size:16px;
+  }
+  .tl-check.checked{
+    background:var(--sea);
+  }
+  .tl-body{
+    flex:1;
+    cursor:pointer;
+    display:flex;align-items:center;gap:10px;
+  }
+  .tl-icon{font-size:18px;width:22px;text-align:center;color:var(--sea-deep);display:inline-flex;align-items:center;justify-content:center;}
+  .tl-time{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .tl-label{
+    font-size:16px;
+    font-weight:600;
+  }
+  .tl-label.done{
+    color:var(--muted);
+    text-decoration:line-through;
+    text-decoration-color:var(--line);
+  }
+  .tl-sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .tl-arrow{
+    color:var(--muted);
+    font-size:18px;
+  }
+  /* ---- section heading ---- */
+  h2.section-title{
+    font-size:15px;
+    color:var(--sea-deep);
+    margin:18px 0 10px;
+    font-weight:700;
+    display:flex;align-items:center;gap:6px;
+  }
+  /* ---- spot list ---- */
+  .spot-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    cursor:pointer;
+  }
+  .spot-thumb{
+    width:56px;height:56px;border-radius:14px;
+    background:var(--sea-light);
+    color:var(--sea-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;
+    flex-shrink:0;
+  }
+  .spot-info .name{font-size:17px;font-weight:700;}
+  .spot-info .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+  .spot-actions{display:flex;gap:6px;}
+  /* ---- detail ---- */
+  .backbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 18px 4px;
+    position:sticky;top:0;
+    background:var(--bg);
+    z-index:6;
+  }
+  .back-btn{
+    border:none;background:none;
+    font-size:15px;
+    color:var(--sea-deep);
+    display:flex;align-items:center;gap:4px;
+    cursor:pointer;
+    padding:6px 4px;
+  }
+  .detail-hero{
+    background:var(--sea-light);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    margin-bottom:18px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .detail-hero .hero-icon{
+    width:56px;height:56px;min-width:56px;border-radius:16px;
+    background:#fff;color:var(--sea-deep);display:flex;align-items:center;justify-content:center;font-size:26px;
+  }
+  .detail-hero .name{font-size:22px;font-weight:800;color:var(--sea-deep);}
+  .detail-hero .time{font-size:13px;color:var(--sea-deep);opacity:.8;margin-top:4px;}
+  .detail-hero .duration{
+    display:inline-block;margin-top:10px;
+    background:#fff;color:var(--sea-deep);
+    border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;
+  }
+  .todo-item{
+    display:flex;align-items:flex-start;gap:12px;
+    padding:12px 0;border-bottom:1px solid var(--line);
+  }
+  .todo-item:last-child{border-bottom:none;}
+  .todo-check{
+    width:32px;height:32px;min-width:32px;margin-top:2px;margin-left:10px;
+    border-radius:9px;border:2px solid var(--sea);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:#fff;font-size:16px;background:#fff;
+  }
+  .todo-check.checked{background:var(--sea);}
+  .todo-text{font-size:15px;flex:1;}
+  .todo-text.checked{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line);}
+  .memo-box{
+    background:var(--beige);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:14px;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .memo-box:last-child{margin-bottom:0;}
+  .memo-label{font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em;}
+  .go-photo-btn{
+    width:100%;padding:14px;
+    border-radius:14px;border:none;
+    background:var(--sea-deep);color:#fff;
+    font-size:15px;font-weight:700;cursor:pointer;
+    margin-top:6px;
+  }
+  /* ---- photos ---- */
+  .photo-group{margin-bottom:22px;}
+  .photo-group-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .photo-group-head .title{font-size:15px;font-weight:700;color:var(--sea-deep);display:flex;align-items:center;gap:6px;}
+  .add-photo-btn{
+    border:1px dashed var(--sea);
+    background:var(--sea-light);
+    color:var(--sea-deep);
+    font-size:12px;font-weight:600;
+    border-radius:12px;padding:7px 12px;
+    cursor:pointer;
+  }
+  .photo-scroll{
+    display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;
+  }
+  .photo-thumb-wrap{position:relative;flex-shrink:0;}
+  .photo-thumb{
+    width:112px;height:112px;border-radius:14px;
+    object-fit:cover;
+    background:var(--sea-light);
+    cursor:pointer;
+    border:1px solid var(--line);
+    display:block;
+  }
+  .photo-thumb-cap{
+    position:absolute;left:0;right:0;bottom:0;
+    background:linear-gradient(0deg,rgba(0,0,0,.55),transparent);
+    color:#fff;font-size:10px;padding:4px 8px 5px;border-radius:0 0 14px 14px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    pointer-events:none;
+  }
+  .photo-empty{
+    font-size:13px;color:var(--muted);
+    padding:18px 0;
+  }
+  /* ---- modal (bottom sheet, used by settings confirms etc.) ---- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(30,40,45,.55);
+    display:flex;align-items:flex-end;justify-content:center;
+    z-index:50;
+  }
+  .modal-sheet{
+    background:#fff;width:100%;max-width:480px;
+    border-radius:20px 20px 0 0;
+    padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+  .modal-actions{display:flex;gap:10px;}
+  .btn{
+    flex:1;padding:13px;border-radius:12px;border:none;
+    font-size:14px;font-weight:700;cursor:pointer;
+  }
+  .btn-primary{background:var(--sea-deep);color:#fff;}
+  .btn-ghost{background:var(--sea-light);color:var(--sea-deep);}
+  .btn-danger{background:#f6e4e0;color:#b1503c;}
+
+  /* ---- lightbox (full photo viewer) ---- */
+  .lightbox-overlay{
+    position:fixed;inset:0;background:rgba(14,24,29,.94);
+    z-index:60;display:flex;flex-direction:column;
+  }
+  .lightbox-top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:calc(12px + env(safe-area-inset-top)) 16px 10px;
+    color:#fff;
+  }
+  .lightbox-count{font-size:13px;opacity:.85;}
+  .lb-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;}
+  .lightbox-stage{
+    flex:1;overflow:auto;position:relative;
+    display:flex;align-items:center;justify-content:center;
+    -webkit-overflow-scrolling:touch;
+  }
+  .lightbox-img{
+    max-width:100%;max-height:100%;object-fit:contain;
+    cursor:zoom-in;border-radius:4px;transition:width .2s ease;
+  }
+  .lightbox-img.zoomed{
+    max-width:none;max-height:none;width:230%;cursor:zoom-out;
+  }
+  .lightbox-nav-btn{
+    position:absolute;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,.16);border:none;color:#fff;
+    font-size:24px;width:40px;height:40px;border-radius:50%;cursor:pointer;
+  }
+  .lb-prev{left:10px;}
+  .lb-next{right:10px;}
+  .lightbox-hint{
+    text-align:center;color:rgba(255,255,255,.55);font-size:11px;padding:2px 0 8px;
+  }
+  .lightbox-bottom{padding:10px 16px calc(16px + env(safe-area-inset-bottom));color:#fff;}
+  .lightbox-caption-view{
+    font-size:14px;color:rgba(255,255,255,.92);min-height:20px;margin-bottom:12px;
+  }
+  .lightbox-caption-view.placeholder{color:rgba(255,255,255,.45);}
+  .lightbox-edit-row{display:flex;gap:8px;margin-bottom:12px;}
+  .lightbox-edit-row input{
+    flex:1;border-radius:10px;border:none;padding:11px 13px;font-size:14px;font-family:inherit;
+  }
+  .lightbox-edit-row button{
+    border:none;border-radius:10px;padding:0 16px;background:var(--sea);color:#fff;font-weight:700;cursor:pointer;
+  }
+  .lightbox-actions{display:flex;gap:10px;}
+  .lb-action-btn{
+    flex:1;padding:12px;border-radius:12px;border:none;font-size:13px;font-weight:700;cursor:pointer;
+    background:rgba(255,255,255,.15);color:#fff;
+  }
+  .lb-action-btn.danger{background:rgba(230,120,100,.3);}
+  .lb-action-btn.primary{background:var(--sea);}
+
+  /* ---- reflection ---- */
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;font-size:13px;color:var(--sea-deep);
+    font-weight:700;margin-bottom:8px;
+  }
+  .field input[type=text], .field textarea{
+    width:100%;border:1px solid var(--line);
+    border-radius:14px;padding:13px 14px;font-size:15px;
+    font-family:inherit;background:#fff;
+  }
+  .field textarea{resize:none;min-height:70px;}
+  .pill-group{display:flex;gap:8px;}
+  .pill{
+    flex:1;padding:11px;border-radius:12px;text-align:center;
+    border:1px solid var(--line);font-size:13px;font-weight:600;
+    color:var(--muted);cursor:pointer;background:#fff;
+  }
+  .pill.selected{
+    background:var(--sea-deep);color:#fff;border-color:var(--sea-deep);
+  }
+  .save-btn{
+    width:100%;padding:15px;border-radius:14px;border:none;
+    background:var(--sea-deep);color:#fff;font-size:16px;font-weight:700;
+    cursor:pointer;margin-top:6px;
+  }
+  .saved-note{
+    text-align:center;font-size:12px;color:var(--sea-deep);
+    margin-top:10px;
+  }
+
+  /* ---- settings / trip editor ---- */
+  .settings-note{
+    font-size:12px;color:var(--muted);background:var(--beige);
+    border-radius:12px;padding:10px 12px;margin-bottom:16px;
+  }
+  .stop-row{
+    display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);
+  }
+  .stop-row:last-child{border-bottom:none;}
+  .stop-row .stop-icon{
+    width:42px;height:42px;min-width:42px;border-radius:12px;background:var(--sea-light);
+    color:var(--sea-deep);display:flex;align-items:center;justify-content:center;font-size:19px;
+  }
+  .stop-row .stop-main{flex:1;min-width:0;}
+  .stop-row .stop-name{font-size:15px;font-weight:700;}
+  .stop-row .stop-time{font-size:12px;color:var(--muted);}
+  .stop-row .stop-controls{display:flex;gap:4px;}
+  .mini-btn{
+    border:none;background:var(--sea-light);color:var(--sea-deep);
+    width:30px;height:30px;border-radius:9px;font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mini-btn.danger{background:#f6e4e0;color:#b1503c;}
+  .add-stop-btn{
+    width:100%;padding:13px;border-radius:14px;border:1px dashed var(--sea);
+    background:var(--sea-light);color:var(--sea-deep);font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;
+  }
+  .icon-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .icon-opt{
+    width:40px;height:40px;border-radius:11px;border:2px solid transparent;
+    background:var(--sea-light);font-size:18px;color:var(--sea-deep);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .icon-opt.selected{border-color:var(--sea-deep);}
+  .todo-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+  .todo-edit-row input{
+    flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  }
+  .add-line-btn{
+    background:none;border:1px dashed var(--sea);color:var(--sea-deep);
+    border-radius:10px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:2px;
+  }
+  .row-2{display:flex;gap:10px;}
+  .row-2 .field{flex:1;}
+
+  .empty-hint{
+    text-align:center;color:var(--muted);font-size:13px;padding:30px 10px;
+  }
+
+  /* ---- bottom nav ---- */
+  nav.bottom{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:480px;
+    background:#fff;
+    border-top:1px solid var(--line);
+    display:flex;
+    padding:8px 6px calc(6px + env(safe-area-inset-bottom));
+    z-index:10;
+  }
+  nav.bottom button{
+    flex:1;background:none;border:none;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:6px 0;cursor:pointer;color:var(--muted);font-size:11px;
+    font-family:inherit;
+  }
+  nav.bottom button .ic{font-size:20px;line-height:1;}
+  nav.bottom button.active{color:var(--sea-deep);font-weight:700;}
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="splash-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5L12.8 12.8 9.5 14.5 11.2 11.2z" fill="currentColor" stroke="none"/></svg></div>
+  <div class="splash-title">ひとり旅しおり</div>
+  <div class="splash-sub">HITORI TABI SHIORI</div>
+  <svg class="splash-waves" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <path d="M0,80 C240,140 480,40 720,80 C960,120 1200,40 1440,80 L1440,200 L0,200 Z" fill="#ffffff" fill-opacity="0.16"></path>
+    <path d="M0,110 C240,160 480,80 720,110 C960,140 1200,80 1440,110 L1440,200 L0,200 Z" fill="#ffffff" fill-opacity="0.22"></path>
+  </svg>
+</div>
+<div id="app">
+  <div id="screen"></div>
+  <nav class="bottom" id="bottomNav"></nav>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= default trip data (used the first time the app runs) ================= */
+  var DEFAULT_TRIP = {
+    title:'山形・庄内日帰り旅',
+    startLocation:'東北芸術工科大学',
+    startTime:'8:30',
+    endLocation:'東北芸術工科大学',
+    endTime:'16:30',
+    extraPhotoCategory:'移動中の景色',
+    stops:[
+      {
+        id:'kamo', icon:'jellyfish', name:'加茂水族館', time:'10:30', duration:'90分', subtitle:'',
+        todoLabel:'やること',
+        todos:['クラゲドームを見る','気になったクラゲを1つ写真に撮る','庄内の魚を見る'],
+        memo:['展示で見た海の生き物を、あとで由良海岸と比べる']
+      },
+      {
+        id:'ramen', icon:'ramen', name:'ラーメン', time:'12:30', duration:'', subtitle:'候補店：中華そば 琴の',
+        todoLabel:'食べるもの',
+        todos:['中華そばを食べる','余裕があれば味玉を食べる'],
+        memo:['一人でゆっくり食べる','スープ、麺、香りを記録する']
+      },
+      {
+        id:'yura', icon:'wave', name:'由良海岸', time:'13:45', duration:'45〜60分', subtitle:'',
+        todoLabel:'体験ミッション',
+        todos:['海の写真を3枚撮る','貝殻・石・海藻などを1つ見つける','波の音を1分聞く','水族館で見た海と実際の海の違いを1つ考える','最後の5分はスマホをしまって海を見る'],
+        memo:[]
+      }
+    ]
+  };
+
+  var ICON_CHOICES = ['wave','ramen','jellyfish','hills','mountain','train','coffee','bag','blossom','torii','car','castle','sunrise','fish','sake','frame','bike','dango'];
+
+  /* ---- hand-drawn line icon set (replaces emoji everywhere in the UI) ---- */
+  var ICONS = {
+    pin: '<path d="M12 21s7-7.2 7-12a7 7 0 10-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
+    compass: '<circle cx="12" cy="12" r="9"/><path d="M14.5 9.5L12.8 12.8 9.5 14.5 11.2 11.2z" fill="currentColor" stroke="none"/>',
+    camera: '<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.4"/>',
+    book: '<path d="M12 6.5c-1.6-1-4-1.4-6.5-1v13c2.5-.4 4.9 0 6.5 1 1.6-1 4-1.4 6.5-1v-13c-2.5-.4-4.9 0-6.5 1z"/><path d="M12 6.5v13"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18 6l-1.5 1.5M7.5 16.5L6 18M18 18l-1.5-1.5M7.5 7.5L6 6"/>',
+    calendar: '<rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8 3.5v3M16 3.5v3"/>',
+    checklist: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l2.3 2.3L16 9"/>',
+    note: '<path d="M6 4h9l4 4v12a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M14 4v4h4M8 13h8M8 17h5"/>',
+    flag: '<path d="M6 3v18"/><path d="M6 4h10l-2.5 3.5L16 11H6z"/>',
+    bus: '<rect x="3.5" y="5" width="17" height="11" rx="2"/><path d="M3.5 10h17M7 16v2M17 16v2"/><circle cx="7.5" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="16.5" cy="19" r="1" fill="currentColor" stroke="none"/>',
+    spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>',
+    trash: '<path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a2 2 0 002 2h6a2 2 0 002-2l1-13"/><path d="M10 11v6M14 11v6"/>',
+    edit: '<path d="M4 20l4.5-1 10-10a2.1 2.1 0 00-3-3l-10 10z"/><path d="M14 6l3 3"/>',
+    wave: '<path d="M2 15c1.5-2 3.5-2 5 0s3.5 2 5 0 3.5-2 5 0 3.5 2 5 0"/><path d="M2 19c1.5-2 3.5-2 5 0s3.5 2 5 0 3.5-2 5 0 3.5 2 5 0"/>',
+    ramen: '<path d="M3 11h18a9 8 0 01-9 7 9 8 0 01-9-7z"/><path d="M7 11c.5-1.5 2-2 2-3.5M12 11c.5-2 2-2.5 2-4M17 11c.5-1.5 2-2 2-3.5"/>',
+    jellyfish: '<path d="M6 10a6 6 0 0112 0c0 2-1 3-6 3s-6-1-6-3z"/><path d="M8 13c0 2-1 2-1 4M12 13v5M16 13c0 2 1 2 1 4"/>',
+    hills: '<path d="M2 17l5-6 4 4 3-3 8 5"/><circle cx="17" cy="7" r="2"/>',
+    mountain: '<path d="M3 18l6-11 4 7 2-3 6 7z"/>',
+    train: '<rect x="6" y="4" width="12" height="12" rx="4"/><path d="M6 12h12M9 16l-2 3M15 16l2 3"/><circle cx="9.5" cy="8.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="14.5" cy="8.5" r="0.6" fill="currentColor" stroke="none"/>',
+    coffee: '<path d="M5 9h11v6a4 4 0 01-4 4H9a4 4 0 01-4-4z"/><path d="M16 10.5h1.5a2 2 0 010 4H16"/><path d="M8 3.5c0 1-1 1-1 2M11.5 3.5c0 1-1 1-1 2"/>',
+    bag: '<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+    blossom: '<circle cx="12" cy="12" r="2"/><circle cx="12" cy="7" r="2.6"/><circle cx="16.5" cy="10" r="2.6"/><circle cx="15" cy="15.5" r="2.6"/><circle cx="9" cy="15.5" r="2.6"/><circle cx="7.5" cy="10" r="2.6"/>',
+    torii: '<path d="M3 8h18M4 6l1-1.5h14L20 6"/><path d="M7 8v12M17 8v12M3 12h18"/>',
+    car: '<path d="M4 15l1.5-5a2 2 0 012-1.5h9a2 2 0 012 1.5l1.5 5"/><rect x="3" y="15" width="18" height="4" rx="1.5"/><circle cx="7.5" cy="19" r="1.2"/><circle cx="16.5" cy="19" r="1.2"/>',
+    castle: '<path d="M5 21V11l2-2v2h2V9l3-3 3 3v2h2V9l2 2v10z"/><path d="M5 21h14"/>',
+    sunrise: '<path d="M4 17a8 8 0 0116 0"/><path d="M2 17h20M12 3v3M5 8l1.8 1.8M19 8l-1.8 1.8"/>',
+    fish: '<path d="M3 12c4-5 12-5 16 0-4 5-12 5-16 0z"/><path d="M19 12l3-3v6z"/><circle cx="8" cy="11" r="0.6" fill="currentColor" stroke="none"/>',
+    sake: '<path d="M5 6h14l-2 12a2 2 0 01-2 2H9a2 2 0 01-2-2z"/><path d="M3 6h18"/>',
+    frame: '<rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9.5" r="1.6"/><path d="M5 17l5-5 3 3 2-2 4 4"/>',
+    bike: '<circle cx="6" cy="17" r="3.2"/><circle cx="18" cy="17" r="3.2"/><path d="M6 17l4-8h4l4 8M8 9h3M10 9l3 8"/>',
+    dango: '<path d="M4 12h16"/><circle cx="7" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="17" cy="12" r="3"/>'
+  };
+  function iconMarkup(key, extraClass){
+    var body = ICONS[key] || ICONS.pin;
+    return '<svg class="icon-svg'+(extraClass?' '+extraClass:'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+body+'</svg>';
+  }
+
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  /* ================= storage: localStorage ================= */
+  function loadJSON(key, fallback){
+    try{
+      var v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function saveJSON(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+
+  var trip = loadJSON('app_trip_config', null) || clone(DEFAULT_TRIP);
+  var progress = loadJSON('app_progress', {});
+  var subtasks = loadJSON('app_subtasks', {});
+  var reflection = loadJSON('app_reflection', {});
+
+  /* derived, generated from `trip` */
+  var SPOTS = {}, SPOT_ORDER = [], TIMELINE = [], PHOTO_CATS = [];
+  function deriveData(){
+    SPOTS = {}; SPOT_ORDER = [];
+    trip.stops.forEach(function(s){ SPOTS[s.id] = s; SPOT_ORDER.push(s.id); });
+    TIMELINE = [];
+    TIMELINE.push({id:'__depart', time:trip.startTime, label:'出発', sub:trip.startLocation, spot:false});
+    trip.stops.forEach(function(s){
+      TIMELINE.push({id:s.id, time:s.time, label:s.name, icon:s.icon, spot:true});
+    });
+    TIMELINE.push({id:'__arrive', time:trip.endTime, label:'帰着', sub:trip.endLocation, spot:false});
+    PHOTO_CATS = trip.stops.map(function(s){ return {id:s.id, label:s.name, icon:s.icon}; });
+    if(trip.extraPhotoCategory){
+      PHOTO_CATS.push({id:'__move', label:trip.extraPhotoCategory, icon:'car'});
+    }
+  }
+  deriveData();
+
+  /* ================= storage: IndexedDB for photos ================= */
+  var dbPromise = null;
+  function getDB(){
+    if(dbPromise) return dbPromise;
+    dbPromise = new Promise(function(resolve,reject){
+      if(typeof indexedDB === 'undefined'){ reject(new Error('indexedDB unsupported')); return; }
+      try{
+        var req = indexedDB.open('app_photos_db', 1);
+        req.onupgradeneeded = function(e){
+          var db = e.target.result;
+          if(!db.objectStoreNames.contains('photos')){
+            var store = db.createObjectStore('photos', {keyPath:'id', autoIncrement:true});
+            store.createIndex('category', 'category', {unique:false});
+          }
+        };
+        req.onsuccess = function(e){ resolve(e.target.result); };
+        req.onerror = function(e){ reject(e); };
+      }catch(e){ reject(e); }
+    });
+    return dbPromise;
+  }
+  function addPhoto(record){
+    return getDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx = db.transaction('photos','readwrite');
+        var req = tx.objectStore('photos').add(record);
+        req.onsuccess = function(){ resolve(req.result); };
+        req.onerror = function(e){ reject(e); };
+      });
+    });
+  }
+  function getPhotosByCategory(cat){
+    return getDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx = db.transaction('photos','readonly');
+        var idx = tx.objectStore('photos').index('category');
+        var req = idx.getAll(cat);
+        req.onsuccess = function(){ resolve(req.result.sort(function(a,b){return b.ts-a.ts;})); };
+        req.onerror = function(e){ reject(e); };
+      });
+    });
+  }
+  function deletePhoto(id){
+    return getDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx = db.transaction('photos','readwrite');
+        tx.objectStore('photos').delete(id);
+        tx.oncomplete = function(){ resolve(); };
+        tx.onerror = function(e){ reject(e); };
+      });
+    });
+  }
+  function updatePhotoCaption(id, caption){
+    return getDB().then(function(db){
+      return new Promise(function(resolve,reject){
+        var tx = db.transaction('photos','readwrite');
+        var store = tx.objectStore('photos');
+        var getReq = store.get(id);
+        getReq.onsuccess = function(){
+          var rec = getReq.result;
+          if(rec){ rec.caption = caption; store.put(rec); }
+          resolve();
+        };
+        getReq.onerror = function(e){ reject(e); };
+      });
+    });
+  }
+
+  /* ================= app state ================= */
+  var state = {
+    tab: 'home',
+    detail: null,
+    detailFrom: 'home',
+    settingsDraft: null,
+    settingsView: 'list',   // list | editStop
+    stopDraft: null,
+    editingStopIndex: null
+  };
+
+  var screenEl = document.getElementById('screen');
+  var navEl = document.getElementById('bottomNav');
+
+  function esc(s){
+    if(s===undefined || s===null) return '';
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  /* ================= bottom nav ================= */
+  var NAV_ITEMS = [
+    {id:'home', label:'しおり', ic:'compass'},
+    {id:'spots', label:'スポット', ic:'pin'},
+    {id:'photos', label:'写真', ic:'camera'},
+    {id:'reflection', label:'振り返り', ic:'book'}
+  ];
+  function renderNav(){
+    var activeTab = state.tab === 'settings' ? 'home' : (state.detail ? state.detailFrom : state.tab);
+    navEl.innerHTML = NAV_ITEMS.map(function(item){
+      return '<button data-tab="'+item.id+'" class="'+(activeTab===item.id?'active':'')+'">'+
+        '<span class="ic">'+iconMarkup(item.ic)+'</span><span>'+item.label+'</span></button>';
+    }).join('');
+  }
+  navEl.addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-tab]');
+    if(!btn) return;
+    state.detail = null;
+    state.tab = btn.getAttribute('data-tab');
+    render();
+  });
+
+  /* ================= progress helpers ================= */
+  function isDone(id){ return !!progress[id]; }
+  function toggleDone(id){
+    progress[id] = !progress[id];
+    saveJSON('app_progress', progress);
+  }
+  function doneCount(){
+    return TIMELINE.filter(function(t){ return isDone(t.id); }).length;
+  }
+  function nextItem(){
+    for(var i=0;i<TIMELINE.length;i++){
+      if(!isDone(TIMELINE[i].id)) return TIMELINE[i];
+    }
+    return null;
+  }
+
+  function goDetail(spotId, from){
+    state.detail = spotId;
+    state.detailFrom = from;
+    render();
+  }
+
+  /* ================= HOME ================= */
+  function renderHome(){
+    var next = nextItem();
+    var total = TIMELINE.length;
+    var done = doneCount();
+    var html = '';
+    html += '<header class="top"><div><h1>'+esc(trip.title)+'</h1>' +
+      '<div class="sub">出発地：'+esc(trip.startLocation)+'</div></div>' +
+      '<button class="icon-btn" id="openSettings" aria-label="旅の設定">'+iconMarkup('gear')+'</button></header>';
+    html += '<main>';
+
+    html += '<div class="card">';
+    html += '<div class="progress-row"><span class="progress-label">'+iconMarkup('compass')+' 現在の進行状況</span>' +
+      '<span class="progress-count">'+done+' / '+total+'</span></div>';
+    html += '<div class="stepper">';
+    TIMELINE.forEach(function(t,i){
+      var d = isDone(t.id);
+      html += '<div class="step-dot '+(d?'done':'')+'">'+(d?'✓':'')+'</div>';
+      if(i < TIMELINE.length-1){
+        html += '<div class="step-line '+(d?'done':'')+'"></div>';
+      }
+    });
+    html += '</div>';
+    html += '</div>';
+
+    if(next){
+      html += '<button class="card next-card" data-next="'+next.id+'">' +
+        '<div class="next-icon">'+iconMarkup(next.icon || (next.id==='__depart'?'bus':'flag'))+'</div>' +
+        '<div><div class="tag">次に行く場所</div>' +
+        '<div class="name">'+esc(next.label)+'</div>' +
+        '<div class="time">'+esc(next.time)+(next.sub?'　'+esc(next.sub):'')+'</div></div>' +
+        '</button>';
+    } else {
+      html += '<div class="card next-card done"><div class="next-icon">'+iconMarkup('spark')+'</div>' +
+        '<div><div class="tag">お疲れさまでした</div>' +
+        '<div class="name">すべての行程が完了しました</div></div></div>';
+    }
+
+    html += '<h2 class="section-title">'+iconMarkup('calendar')+' 今日の流れ</h2>';
+    html += '<div class="card timeline">';
+    TIMELINE.forEach(function(t){
+      var done_ = isDone(t.id);
+      html += '<div class="tl-item">';
+      html += '<div class="tl-check '+(done_?'checked':'')+'" data-check="'+t.id+'">'+(done_?'✓':'')+'</div>';
+      html += '<div class="tl-body" data-goto="'+t.id+'">';
+      if(t.spot) html += '<span class="tl-icon">'+iconMarkup(t.icon||'pin')+'</span>';
+      html += '<div><div class="tl-time">'+esc(t.time)+'</div>';
+      html += '<div class="tl-label '+(done_?'done':'')+'">'+esc(t.label)+'</div>';
+      if(t.sub) html += '<div class="tl-sub">'+esc(t.sub)+'</div>';
+      html += '</div></div>';
+      if(t.spot) html += '<div class="tl-arrow">›</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '</main>';
+    screenEl.innerHTML = html;
+
+    screenEl.querySelector('#openSettings').addEventListener('click', openSettings);
+    screenEl.querySelectorAll('[data-check]').forEach(function(el){
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        toggleDone(el.getAttribute('data-check'));
+        render();
+      });
+    });
+    screenEl.querySelectorAll('[data-goto]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var id = el.getAttribute('data-goto');
+        if(SPOTS[id]) goDetail(id, 'home');
+      });
+    });
+    var nextBtn = screenEl.querySelector('[data-next]');
+    if(nextBtn){
+      nextBtn.addEventListener('click', function(){
+        var id = nextBtn.getAttribute('data-next');
+        if(SPOTS[id]) goDetail(id, 'home');
+      });
+    }
+  }
+
+  /* ================= SPOT LIST ================= */
+  function renderSpotsList(){
+    var html = '';
+    html += '<header class="top"><div><h1>スポット</h1><div class="sub">今日訪れる場所</div></div></header>';
+    html += '<main>';
+    if(SPOT_ORDER.length === 0){
+      html += '<div class="empty-hint">まだスポットが登録されていません。'+iconMarkup('gear')+' 設定から追加できます。</div>';
+    }
+    SPOT_ORDER.forEach(function(id){
+      var s = SPOTS[id];
+      html += '<div class="card spot-card" data-goto="'+id+'">';
+      html += '<div class="spot-thumb">'+iconMarkup(s.icon||'pin')+'</div>';
+      html += '<div class="spot-info"><div class="name">'+esc(s.name)+'</div>' +
+        '<div class="meta">'+esc(s.time)+(s.duration?'　所要 '+esc(s.duration):'')+(s.subtitle?'　'+esc(s.subtitle):'')+'</div></div>';
+      html += '</div>';
+    });
+    html += '</main>';
+    screenEl.innerHTML = html;
+    screenEl.querySelectorAll('[data-goto]').forEach(function(el){
+      el.addEventListener('click', function(){
+        goDetail(el.getAttribute('data-goto'), 'spots');
+      });
+    });
+  }
+
+  /* ================= SPOT DETAIL ================= */
+  function getSubtasks(spotId){
+    var s = SPOTS[spotId];
+    if(!subtasks[spotId] || subtasks[spotId].length !== s.todos.length){
+      subtasks[spotId] = s.todos.map(function(){return false;});
+      saveJSON('app_subtasks', subtasks);
+    }
+    return subtasks[spotId];
+  }
+
+  function renderSpotDetail(spotId){
+    var s = SPOTS[spotId];
+    if(!s){ state.detail = null; render(); return; }
+    var tasks = getSubtasks(spotId);
+    var html = '';
+    html += '<div class="backbar"><button class="back-btn" data-back="1">‹ 戻る</button></div>';
+    html += '<main>';
+    html += '<div class="detail-hero">';
+    html += '<div class="hero-icon">'+iconMarkup(s.icon||'pin')+'</div>';
+    html += '<div><div class="name">'+esc(s.name)+'</div>';
+    html += '<div class="time">'+esc(s.time)+(s.subtitle?'　'+esc(s.subtitle):'')+'</div>';
+    if(s.duration) html += '<div class="duration">所要時間 '+esc(s.duration)+'</div>';
+    html += '</div></div>';
+
+    if(s.todos && s.todos.length){
+      html += '<h2 class="section-title">'+iconMarkup('checklist')+' '+esc(s.todoLabel || 'やること')+'</h2>';
+      html += '<div class="card">';
+      s.todos.forEach(function(t, i){
+        var checked = tasks[i];
+        html += '<div class="todo-item">';
+        html += '<div class="todo-check '+(checked?'checked':'')+'" data-todo="'+i+'">'+(checked?'✓':'')+'</div>';
+        html += '<div class="todo-text '+(checked?'checked':'')+'">'+esc(t)+'</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    if(s.memo && s.memo.length){
+      html += '<div class="card"><div class="memo-label">'+iconMarkup('note')+' メモ</div>';
+      s.memo.forEach(function(line){
+        html += '<div class="memo-box">'+esc(line)+'</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '<button class="go-photo-btn" data-photo="'+spotId+'">'+iconMarkup('camera')+' この場所の写真を撮る／見る</button>';
+    html += '</main>';
+    screenEl.innerHTML = html;
+
+    screenEl.querySelector('[data-back]').addEventListener('click', function(){
+      state.detail = null;
+      render();
+    });
+    screenEl.querySelectorAll('[data-todo]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var i = parseInt(el.getAttribute('data-todo'),10);
+        tasks[i] = !tasks[i];
+        subtasks[spotId] = tasks;
+        saveJSON('app_subtasks', subtasks);
+        renderSpotDetail(spotId);
+      });
+    });
+    screenEl.querySelector('[data-photo]').addEventListener('click', function(){
+      state.detail = null;
+      state.tab = 'photos';
+      render();
+    });
+  }
+
+  /* ================= PHOTOS ================= */
+  function renderPhotos(){
+    var html = '';
+    html += '<header class="top"><div><h1>写真</h1><div class="sub">場所ごとの記録</div></div></header>';
+    html += '<main id="photoMain">';
+    if(PHOTO_CATS.length === 0){
+      html += '<div class="empty-hint">スポットを登録すると、ここに写真カテゴリが表示されます。</div>';
+    }
+    PHOTO_CATS.forEach(function(cat){
+      html += '<div class="photo-group" data-cat="'+cat.id+'">';
+      html += '<div class="photo-group-head"><span class="title">'+iconMarkup(cat.icon||'frame')+' '+esc(cat.label)+'</span>' +
+        '<button class="add-photo-btn" data-add="'+cat.id+'">＋ 追加</button></div>';
+      html += '<div class="photo-scroll" id="scroll-'+cat.id+'"><span class="photo-empty">まだ写真がありません</span></div>';
+      html += '</div>';
+    });
+    html += '<input type="file" accept="image/*" capture="environment" id="fileInput" style="display:none;">';
+    html += '</main>';
+    screenEl.innerHTML = html;
+
+    PHOTO_CATS.forEach(function(cat){
+      getPhotosByCategory(cat.id).then(function(photos){
+        renderPhotoScroll(cat.id, photos);
+      }).catch(function(){ renderPhotoScroll(cat.id, []); });
+    });
+
+    var fileInput = screenEl.querySelector('#fileInput');
+    var pendingCat = null;
+    screenEl.querySelectorAll('[data-add]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        pendingCat = btn.getAttribute('data-add');
+        fileInput.value = '';
+        fileInput.click();
+      });
+    });
+    fileInput.addEventListener('change', function(){
+      var file = fileInput.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e){
+        openLightbox({
+          mode:'add',
+          category:pendingCat,
+          photos:[{dataUrl:e.target.result, caption:''}],
+          index:0
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPhotoScroll(catId, photos){
+    var el = screenEl.querySelector && screenEl.querySelector('#scroll-'+catId);
+    if(!el) return;
+    if(!photos.length){
+      el.innerHTML = '<span class="photo-empty">まだ写真がありません</span>';
+      return;
+    }
+    el.innerHTML = photos.map(function(p){
+      return '<div class="photo-thumb-wrap">' +
+        '<img class="photo-thumb" src="'+p.dataUrl+'" data-view="'+p.id+'">' +
+        (p.caption ? '<div class="photo-thumb-cap">'+esc(p.caption)+'</div>' : '') +
+        '</div>';
+    }).join('');
+    el.querySelectorAll('[data-view]').forEach(function(img, i){
+      img.addEventListener('click', function(){
+        openLightbox({mode:'view', category:catId, photos:photos, index:i});
+      });
+    });
+  }
+
+  /* ================= LIGHTBOX (full photo viewer) ================= */
+  var lb = null; // current lightbox state
+
+  function openLightbox(opts){
+    lb = {
+      mode: opts.mode,               // 'view' | 'add'
+      category: opts.category,
+      photos: opts.photos,           // array of {id?, dataUrl, caption}
+      index: opts.index || 0,
+      zoomed: false,
+      editing: opts.mode === 'add'
+    };
+    var overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+    overlay.id = 'lightboxOverlay';
+    document.body.appendChild(overlay);
+    renderLightbox();
+  }
+
+  function currentPhoto(){ return lb.photos[lb.index]; }
+
+  function renderLightbox(){
+    var overlay = document.getElementById('lightboxOverlay');
+    if(!overlay || !lb) return;
+    var p = currentPhoto();
+    var multi = lb.mode === 'view' && lb.photos.length > 1;
+
+    var html = '';
+    html += '<div class="lightbox-top">';
+    html += '<span class="lightbox-count">'+(lb.mode==='add' ? '新しい写真' : (lb.index+1)+' / '+lb.photos.length)+'</span>';
+    html += '<button class="lb-close" data-lb-close="1">✕</button>';
+    html += '</div>';
+
+    html += '<div class="lightbox-stage">';
+    if(multi){
+      html += '<button class="lightbox-nav-btn lb-prev" data-lb-prev="1">‹</button>';
+    }
+    html += '<img class="lightbox-img '+(lb.zoomed?'zoomed':'')+'" id="lbImg" src="'+p.dataUrl+'">';
+    if(multi){
+      html += '<button class="lightbox-nav-btn lb-next" data-lb-next="1">›</button>';
+    }
+    html += '</div>';
+    html += '<div class="lightbox-hint">タップで拡大／縮小できます</div>';
+
+    html += '<div class="lightbox-bottom">';
+    if(lb.editing){
+      html += '<div class="lightbox-edit-row">' +
+        '<input type="text" id="lbCaptionInput" placeholder="短い一言メモ（任意）" value="'+esc(p.caption||'')+'">' +
+        '<button data-lb-save-caption="1">'+(lb.mode==='add' ? '保存' : '更新')+'</button>' +
+        '</div>';
+    } else {
+      html += '<div class="lightbox-caption-view '+(p.caption?'':'placeholder')+'">'+(p.caption ? esc(p.caption) : 'メモはまだありません')+'</div>';
+    }
+    html += '<div class="lightbox-actions">';
+    if(lb.mode === 'view'){
+      if(!lb.editing){
+        html += '<button class="lb-action-btn" data-lb-edit="1">'+iconMarkup('edit')+' メモを編集</button>';
+      }
+      html += '<button class="lb-action-btn danger" data-lb-delete="1">'+iconMarkup('trash')+' 削除</button>';
+    } else {
+      html += '<button class="lb-action-btn" data-lb-cancel="1">キャンセル</button>';
+      if(!lb.editing){
+        html += '<button class="lb-action-btn primary" data-lb-save-caption="1">この写真を保存</button>';
+      }
+    }
+    html += '</div>';
+    html += '</div>';
+
+    overlay.innerHTML = html;
+
+    overlay.querySelector('[data-lb-close]').addEventListener('click', closeLightbox);
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) closeLightbox(); });
+
+    var prevBtn = overlay.querySelector('[data-lb-prev]');
+    if(prevBtn) prevBtn.addEventListener('click', function(){ navLightbox(-1); });
+    var nextBtn = overlay.querySelector('[data-lb-next]');
+    if(nextBtn) nextBtn.addEventListener('click', function(){ navLightbox(1); });
+
+    var img = overlay.querySelector('#lbImg');
+    img.addEventListener('click', function(){
+      lb.zoomed = !lb.zoomed;
+      img.classList.toggle('zoomed', lb.zoomed);
+    });
+
+    var editBtn = overlay.querySelector('[data-lb-edit]');
+    if(editBtn) editBtn.addEventListener('click', function(){ lb.editing = true; renderLightbox(); });
+
+    var cancelBtn = overlay.querySelector('[data-lb-cancel]');
+    if(cancelBtn) cancelBtn.addEventListener('click', closeLightbox);
+
+    var delBtn = overlay.querySelector('[data-lb-delete]');
+    if(delBtn) delBtn.addEventListener('click', function(){
+      if(delBtn.getAttribute('data-armed') !== '1'){
+        delBtn.setAttribute('data-armed','1');
+        delBtn.textContent = 'もう一度タップで削除';
+        return;
+      }
+      var cat = lb.category;
+      deletePhoto(p.id).then(function(){
+        closeLightbox();
+        getPhotosByCategory(cat).then(function(photos){
+          renderPhotoScroll(cat, photos);
+        });
+      }).catch(function(){ alert('削除できませんでした。この端末・ブラウザでは写真の保存機能が使えない可能性があります。'); });
+    });
+
+    var saveCapBtn = overlay.querySelector('[data-lb-save-caption]');
+    if(saveCapBtn) saveCapBtn.addEventListener('click', function(){
+      var val = '';
+      var input = overlay.querySelector('#lbCaptionInput');
+      if(input) val = input.value.trim();
+      var cat = lb.category;
+      if(lb.mode === 'add'){
+        addPhoto({category:cat, dataUrl:p.dataUrl, caption:val, ts:Date.now()}).then(function(){
+          closeLightbox();
+          getPhotosByCategory(cat).then(function(photos){
+            renderPhotoScroll(cat, photos);
+          });
+        }).catch(function(){ alert('写真を保存できませんでした。この端末・ブラウザでは写真の保存機能が使えない可能性があります。'); });
+      } else {
+        updatePhotoCaption(p.id, val).then(function(){
+          p.caption = val;
+          lb.editing = false;
+          getPhotosByCategory(cat).then(function(photos){
+            renderPhotoScroll(cat, photos);
+          });
+          renderLightbox();
+        }).catch(function(){ alert('メモを更新できませんでした。'); });
+      }
+    });
+  }
+
+  function navLightbox(dir){
+    lb.index = (lb.index + dir + lb.photos.length) % lb.photos.length;
+    lb.zoomed = false;
+    lb.editing = false;
+    renderLightbox();
+  }
+
+  function closeLightbox(){
+    var overlay = document.getElementById('lightboxOverlay');
+    if(overlay) overlay.remove();
+    lb = null;
+  }
+
+  /* ================= REFLECTION ================= */
+  function renderReflection(){
+    var r = reflection;
+    var html = '';
+    html += '<header class="top"><div><h1>振り返り</h1><div class="sub">今日の旅を記録に残す</div></div></header>';
+    html += '<main>';
+    html += '<div class="card">';
+
+    html += '<div class="field"><label>今日一番よかったもの</label>' +
+      '<input type="text" id="r1" value="'+esc(r.best||'')+'" placeholder="例：クラゲドームの光"></div>';
+
+    html += '<div class="field"><label>一番おいしかったもの</label>' +
+      '<input type="text" id="r2" value="'+esc(r.tasty||'')+'" placeholder="例：中華そばのスープ"></div>';
+
+    html += '<div class="field"><label>海で見つけたもの</label>' +
+      '<input type="text" id="r3" value="'+esc(r.found||'')+'" placeholder="例：小さな貝殻"></div>';
+
+    html += '<div class="field"><label>また行きたいか</label>' +
+      '<div class="pill-group" id="r4group">' +
+      ['また行きたい','わからない','今回で十分'].map(function(opt){
+        return '<div class="pill '+(r.again===opt?'selected':'')+'" data-val="'+esc(opt)+'">'+esc(opt)+'</div>';
+      }).join('') + '</div></div>';
+
+    html += '<div class="field"><label>一言感想</label>' +
+      '<textarea id="r5" placeholder="今日一日を一言で">'+esc(r.note||'')+'</textarea></div>';
+
+    html += '<button class="save-btn" id="saveReflection">保存する</button>';
+    html += '<div class="saved-note" id="savedNote">'+(r.savedAt ? '最終保存：'+esc(r.savedAt) : '')+'</div>';
+    html += '</div>';
+    html += '</main>';
+    screenEl.innerHTML = html;
+
+    var selectedAgain = r.again || '';
+    screenEl.querySelectorAll('#r4group .pill').forEach(function(p){
+      p.addEventListener('click', function(){
+        selectedAgain = p.getAttribute('data-val');
+        screenEl.querySelectorAll('#r4group .pill').forEach(function(x){x.classList.remove('selected');});
+        p.classList.add('selected');
+      });
+    });
+
+    screenEl.querySelector('#saveReflection').addEventListener('click', function(){
+      reflection = {
+        best: screenEl.querySelector('#r1').value.trim(),
+        tasty: screenEl.querySelector('#r2').value.trim(),
+        found: screenEl.querySelector('#r3').value.trim(),
+        again: selectedAgain,
+        note: screenEl.querySelector('#r5').value.trim(),
+        savedAt: new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
+      };
+      saveJSON('app_reflection', reflection);
+      screenEl.querySelector('#savedNote').textContent = '最終保存：'+reflection.savedAt;
+    });
+  }
+
+  /* ================= SETTINGS (trip editor) — makes the app reusable for any trip ================= */
+  function openSettings(){
+    state.settingsDraft = clone(trip);
+    state.settingsView = 'list';
+    state.tab = 'settings';
+    render();
+  }
+  function closeSettings(){
+    state.tab = 'home';
+    state.settingsDraft = null;
+    render();
+  }
+
+  function renderSettings(){
+    if(state.settingsView === 'editStop'){
+      renderStopEditor();
+      return;
+    }
+    var d = state.settingsDraft;
+    var html = '';
+    html += '<div class="backbar"><button class="back-btn" data-back="1">‹ 戻る</button></div>';
+    html += '<main>';
+    html += '<h1 style="font-size:20px;color:var(--sea-deep);margin:4px 0 4px;">旅の設定</h1>';
+    html += '<div class="settings-note">ここを編集すると、どんな日帰り旅でもこのアプリを使えます。保存すると進行状況と振り返りはリセットされます（写真は残ります）。</div>';
+
+    html += '<div class="card">';
+    html += '<div class="field"><label>旅のタイトル</label><input type="text" id="s_title" value="'+esc(d.title)+'"></div>';
+    html += '<div class="row-2">';
+    html += '<div class="field"><label>出発地</label><input type="text" id="s_start_loc" value="'+esc(d.startLocation)+'"></div>';
+    html += '<div class="field"><label>出発時刻</label><input type="text" id="s_start_time" value="'+esc(d.startTime)+'"></div>';
+    html += '</div>';
+    html += '<div class="row-2">';
+    html += '<div class="field"><label>帰着地</label><input type="text" id="s_end_loc" value="'+esc(d.endLocation)+'"></div>';
+    html += '<div class="field"><label>帰着時刻</label><input type="text" id="s_end_time" value="'+esc(d.endTime)+'"></div>';
+    html += '</div>';
+    html += '<div class="field" style="margin-bottom:0;"><label>その他の写真カテゴリ（任意）</label>' +
+      '<input type="text" id="s_extra_cat" value="'+esc(d.extraPhotoCategory||'')+'" placeholder="例：移動中の景色"></div>';
+    html += '</div>';
+
+    html += '<h2 class="section-title">'+iconMarkup('pin')+' 訪れる場所</h2>';
+    html += '<div class="card">';
+    if(d.stops.length === 0){
+      html += '<div class="empty-hint">まだ場所がありません</div>';
+    }
+    d.stops.forEach(function(s, i){
+      html += '<div class="stop-row">';
+      html += '<div class="stop-icon">'+iconMarkup(s.icon||'pin')+'</div>';
+      html += '<div class="stop-main" data-edit-stop="'+i+'"><div class="stop-name">'+esc(s.name||'(名称未設定)')+'</div>' +
+        '<div class="stop-time">'+esc(s.time)+'</div></div>';
+      html += '<div class="stop-controls">';
+      if(i>0) html += '<button class="mini-btn" data-move-up="'+i+'">↑</button>';
+      if(i<d.stops.length-1) html += '<button class="mini-btn" data-move-down="'+i+'">↓</button>';
+      html += '<button class="mini-btn danger" data-delete-stop="'+i+'">'+iconMarkup('trash')+'</button>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+    html += '<button class="add-stop-btn" id="addStop">＋ スポットを追加</button>';
+
+    html += '<button class="save-btn" id="saveSettings" style="margin-top:22px;">この内容で保存する</button>';
+    html += '<button class="btn btn-ghost" id="resetDefault" style="width:100%;margin-top:10px;">初期のしおり（庄内の旅）に戻す</button>';
+    html += '</main>';
+    screenEl.innerHTML = html;
+
+    screenEl.querySelector('[data-back]').addEventListener('click', closeSettings);
+
+    function syncFieldsToDraft(){
+      d.title = screenEl.querySelector('#s_title').value.trim() || d.title;
+      d.startLocation = screenEl.querySelector('#s_start_loc').value.trim();
+      d.startTime = screenEl.querySelector('#s_start_time').value.trim();
+      d.endLocation = screenEl.querySelector('#s_end_loc').value.trim();
+      d.endTime = screenEl.querySelector('#s_end_time').value.trim();
+      d.extraPhotoCategory = screenEl.querySelector('#s_extra_cat').value.trim();
+    }
+
+    screenEl.querySelectorAll('[data-edit-stop]').forEach(function(el){
+      el.addEventListener('click', function(){
+        syncFieldsToDraft();
+        editStop(parseInt(el.getAttribute('data-edit-stop'),10));
+      });
+    });
+    screenEl.querySelectorAll('[data-move-up]').forEach(function(el){
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        syncFieldsToDraft();
+        var i = parseInt(el.getAttribute('data-move-up'),10);
+        var tmp = d.stops[i-1]; d.stops[i-1] = d.stops[i]; d.stops[i] = tmp;
+        renderSettings();
+      });
+    });
+    screenEl.querySelectorAll('[data-move-down]').forEach(function(el){
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        syncFieldsToDraft();
+        var i = parseInt(el.getAttribute('data-move-down'),10);
+        var tmp = d.stops[i+1]; d.stops[i+1] = d.stops[i]; d.stops[i] = tmp;
+        renderSettings();
+      });
+    });
+    screenEl.querySelectorAll('[data-delete-stop]').forEach(function(el){
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        syncFieldsToDraft();
+        var i = parseInt(el.getAttribute('data-delete-stop'),10);
+        d.stops.splice(i,1);
+        renderSettings();
+      });
+    });
+    screenEl.querySelector('#addStop').addEventListener('click', function(){
+      syncFieldsToDraft();
+      editStop(-1); // -1 = new stop
+    });
+    screenEl.querySelector('#resetDefault').addEventListener('click', function(){
+      state.settingsDraft = clone(DEFAULT_TRIP);
+      renderSettings();
+    });
+    screenEl.querySelector('#saveSettings').addEventListener('click', function(){
+      syncFieldsToDraft();
+      trip = clone(d);
+      saveJSON('app_trip_config', trip);
+      deriveData();
+      progress = {}; subtasks = {}; reflection = {};
+      saveJSON('app_progress', progress);
+      saveJSON('app_subtasks', subtasks);
+      saveJSON('app_reflection', reflection);
+      state.tab = 'home';
+      state.settingsDraft = null;
+      render();
+    });
+  }
+
+  function editStop(index){
+    state.editingStopIndex = index;
+    if(index === -1){
+      state.stopDraft = {
+        id: 'stop_'+Date.now()+Math.floor(Math.random()*1000),
+        icon:'pin', name:'', time:'', duration:'', subtitle:'',
+        todoLabel:'やること', todos:[''], memo:['']
+      };
+    } else {
+      state.stopDraft = clone(state.settingsDraft.stops[index]);
+      if(!state.stopDraft.todos || !state.stopDraft.todos.length) state.stopDraft.todos = [''];
+      if(!state.stopDraft.memo || !state.stopDraft.memo.length) state.stopDraft.memo = [''];
+    }
+    state.settingsView = 'editStop';
+    render();
+  }
+
+  function renderStopEditor(){
+    var sd = state.stopDraft;
+    var isNew = state.editingStopIndex === -1;
+    var html = '';
+    html += '<div class="backbar"><button class="back-btn" data-back="1">‹ 場所の一覧へ</button></div>';
+    html += '<main>';
+    html += '<h1 style="font-size:19px;color:var(--sea-deep);margin:4px 0 12px;">'+(isNew?'場所を追加':'場所を編集')+'</h1>';
+
+    html += '<div class="card">';
+    html += '<div class="field"><label>アイコン</label><div class="icon-picker" id="iconPicker">';
+    ICON_CHOICES.forEach(function(ic){
+      html += '<div class="icon-opt '+(sd.icon===ic?'selected':'')+'" data-icon="'+ic+'">'+iconMarkup(ic)+'</div>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><label>名称</label><input type="text" id="sd_name" value="'+esc(sd.name)+'" placeholder="例：加茂水族館"></div>';
+    html += '<div class="row-2">';
+    html += '<div class="field"><label>時刻</label><input type="text" id="sd_time" value="'+esc(sd.time)+'" placeholder="例：10:30"></div>';
+    html += '<div class="field"><label>所要時間（任意）</label><input type="text" id="sd_duration" value="'+esc(sd.duration)+'" placeholder="例：90分"></div>';
+    html += '</div>';
+    html += '<div class="field"><label>補足（任意）</label><input type="text" id="sd_subtitle" value="'+esc(sd.subtitle)+'" placeholder="例：候補店名など"></div>';
+    html += '<div class="field" style="margin-bottom:0;"><label>チェックリストの見出し</label><input type="text" id="sd_todoLabel" value="'+esc(sd.todoLabel)+'" placeholder="例：やること／食べるもの"></div>';
+    html += '</div>';
+
+    html += '<h2 class="section-title">'+iconMarkup('checklist')+' やることリスト</h2>';
+    html += '<div class="card" id="todoListWrap">';
+    sd.todos.forEach(function(t, i){
+      html += '<div class="todo-edit-row" data-todo-row="'+i+'">' +
+        '<input type="text" value="'+esc(t)+'" data-todo-input="'+i+'" placeholder="やることを入力">' +
+        '<button class="mini-btn danger" data-remove-todo="'+i+'">✕</button></div>';
+    });
+    html += '<button class="add-line-btn" id="addTodo">＋ 項目を追加</button>';
+    html += '</div>';
+
+    html += '<h2 class="section-title">'+iconMarkup('note')+' メモ</h2>';
+    html += '<div class="card" id="memoListWrap">';
+    sd.memo.forEach(function(t, i){
+      html += '<div class="todo-edit-row" data-memo-row="'+i+'">' +
+        '<input type="text" value="'+esc(t)+'" data-memo-input="'+i+'" placeholder="メモを入力（任意）">' +
+        '<button class="mini-btn danger" data-remove-memo="'+i+'">✕</button></div>';
+    });
+    html += '<button class="add-line-btn" id="addMemo">＋ メモ行を追加</button>';
+    html += '</div>';
+
+    html += '<div class="modal-actions" style="margin-top:8px;">';
+    html += '<button class="btn btn-ghost" id="cancelStop">キャンセル</button>';
+    html += '<button class="btn btn-primary" id="saveStop">この場所を保存</button>';
+    html += '</div>';
+    html += '</main>';
+    screenEl.innerHTML = html;
+
+    function syncDraft(){
+      sd.name = screenEl.querySelector('#sd_name').value.trim();
+      sd.time = screenEl.querySelector('#sd_time').value.trim();
+      sd.duration = screenEl.querySelector('#sd_duration').value.trim();
+      sd.subtitle = screenEl.querySelector('#sd_subtitle').value.trim();
+      sd.todoLabel = screenEl.querySelector('#sd_todoLabel').value.trim() || 'やること';
+      screenEl.querySelectorAll('[data-todo-input]').forEach(function(inp,i){ sd.todos[i] = inp.value; });
+      screenEl.querySelectorAll('[data-memo-input]').forEach(function(inp,i){ sd.memo[i] = inp.value; });
+    }
+
+    screenEl.querySelector('[data-back]').addEventListener('click', function(){
+      state.settingsView = 'list';
+      render();
+    });
+    screenEl.querySelector('#cancelStop').addEventListener('click', function(){
+      state.settingsView = 'list';
+      render();
+    });
+
+    screenEl.querySelectorAll('[data-icon]').forEach(function(el){
+      el.addEventListener('click', function(){
+        syncDraft();
+        sd.icon = el.getAttribute('data-icon');
+        renderStopEditor();
+      });
+    });
+
+    screenEl.querySelector('#addTodo').addEventListener('click', function(){
+      syncDraft();
+      sd.todos.push('');
+      renderStopEditor();
+    });
+    screenEl.querySelectorAll('[data-remove-todo]').forEach(function(el){
+      el.addEventListener('click', function(){
+        syncDraft();
+        var i = parseInt(el.getAttribute('data-remove-todo'),10);
+        sd.todos.splice(i,1);
+        if(!sd.todos.length) sd.todos = [''];
+        renderStopEditor();
+      });
+    });
+    screenEl.querySelector('#addMemo').addEventListener('click', function(){
+      syncDraft();
+      sd.memo.push('');
+      renderStopEditor();
+    });
+    screenEl.querySelectorAll('[data-remove-memo]').forEach(function(el){
+      el.addEventListener('click', function(){
+        syncDraft();
+        var i = parseInt(el.getAttribute('data-remove-memo'),10);
+        sd.memo.splice(i,1);
+        renderStopEditor();
+      });
+    });
+
+    screenEl.querySelector('#saveStop').addEventListener('click', function(){
+      syncDraft();
+      sd.todos = sd.todos.map(function(t){return t.trim();}).filter(function(t){return t.length>0;});
+      sd.memo = sd.memo.map(function(t){return t.trim();}).filter(function(t){return t.length>0;});
+      if(!sd.name){ sd.name = '名称未設定'; }
+      if(state.editingStopIndex === -1){
+        state.settingsDraft.stops.push(sd);
+      } else {
+        state.settingsDraft.stops[state.editingStopIndex] = sd;
+      }
+      state.settingsView = 'list';
+      state.stopDraft = null;
+      render();
+    });
+  }
+
+  /* ================= master render ================= */
+  function render(){
+    renderNav();
+    if(state.tab === 'settings'){
+      renderSettings();
+      return;
+    }
+    if(state.detail){
+      renderSpotDetail(state.detail);
+      return;
+    }
+    if(state.tab === 'home') renderHome();
+    else if(state.tab === 'spots') renderSpotsList();
+    else if(state.tab === 'photos') renderPhotos();
+    else if(state.tab === 'reflection') renderReflection();
+  }
+
+  render();
+
+  /* remove splash overlay after its animation finishes */
+  window.setTimeout(function(){
+    var splash = document.getElementById('splash');
+    if(splash) splash.remove();
+  }, 1800);
+})();
+</script>
+</body>
+</html>
